@@ -1,0 +1,27 @@
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/ConstraintLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <Button
+        android:id="@+id/save_changes_btn"
+        android:layout_width="0dp"
+        android:layout_height="55dp"
+        android:backgroundTint="@color/save_changes_btn_color"
+        android:text="@string/settings_save_changes_text"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/back_btn"
+        android:layout_width="197dp"
+        android:layout_height="49dp"
+        android:backgroundTint="@color/back_btn_color"
+        android:text="@string/settings_back_btn_text"
+        android:textColor="#000000"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

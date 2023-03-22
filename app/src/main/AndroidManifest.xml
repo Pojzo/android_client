@@ -3,9 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-sdk tools:overrideLibrary="androidx.annotation" />
-
     <!-- Add the INTERNET permission here -->
     <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -15,6 +15,14 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Client"
         tools:targetApi="31">
+        <activity
+            android:name=".SettingsActivity2"
+            android:exported="false"
+            android:label="@string/title_activity_settings2" />
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false"
+            android:label="@string/title_activity_settings" />
         <activity
             android:name=".MainActivity"
             android:exported="true">
