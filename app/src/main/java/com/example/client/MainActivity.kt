@@ -4,7 +4,6 @@ package com.example.client
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
@@ -28,10 +27,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var connectionStatusText: TextView
 
 
-    private lateinit var sharedPreferences: SharedPreferences
-
     private var defaultIP: String = "0.0.0.0"
-    private var defaultPort: Int = 44444
+    private var defaultPort: Int = 4444
 
     private lateinit var socket: Socket
     private lateinit var socketWriter: PrintWriter
@@ -86,8 +83,9 @@ class MainActivity : AppCompatActivity() {
     @SuppressLint("SetTextI18n")
     private fun connect() {
         val thread = Thread {
-            val ip = sharedPreferences.getString("IP", "0.0.0.0")
-            val port = sharedPreferences.getInt("PORT", 44444)
+            val sharedPreference = getSharedPreferences("NetworkSettings", Context.MODE_PRIVATE)
+            val ip = sharedPreference.getString("IP", "0.0.0.0")
+            val port = sharedPreference.getInt("PORT", 44444)
             socket = Socket(ip, port)
             if (!socket.isConnected) {
                 return@Thread
@@ -102,16 +100,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initSharedPreferences() {
-        sharedPreferences = getSharedPreferences("NetworkSettings", Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
-        editor.putString("IP", defaultIP)
-        editor.putInt("PORT", defaultPort)
-        editor.apply()
+        val sharedPreference = getSharedPreferences("NetworkSettings", Context.MODE_PRIVATE)
+        val editor = sharedPreference.edit()
+        if (!sharedPreference.contains("IP")) {
+            editor.putString("IP", defaultIP)
+        }
+        if (!sharedPreference.contains("PORT")) {
+            editor.putInt("PORT", defaultPort)
+        }
+        //
+        editor.commit()
 
-        val ipString = "IP: ".plus(defaultIP)
-        val portString = "PORT :".plus(defaultPort.toString())
-        ipStatusText.text = ipString
-        portStatusText.text = portString
+        updateStatusIpPort(defaultIP, defaultPort)
     }
     private fun runSocket() {
         while (true) {
@@ -129,6 +129,22 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        val sharedPreference = getSharedPreferences("NetworkSettings", Context.MODE_PRIVATE)
+        val ip = sharedPreference.getString("IP", defaultIP)
+        val port = sharedPreference.getInt("PORT", defaultPort)
+        println("A ked sa to resumlo: ".plus(ip))
+        updateStatusIpPort(ip, port)
+    }
+
+    private fun updateStatusIpPort(ip: String?, port: Int) {
+        val ipString: String = if (ip.isNullOrBlank()) {
+            "IP: ".plus(defaultIP)
+        } else {
+            "IP: ".plus(ip)
+        }
+        val portString = "PORT :".plus(port.toString())
+        ipStatusText.text = ipString
+        portStatusText.text = portString
     }
 }
 
