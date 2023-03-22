@@ -22,7 +22,13 @@
     <string name="attachment_summary_on">Automatically download attachments for incoming emails
     </string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
-    <string name="settings_save_changes_text">SAVE CHANGES</string>
+    <string name="settings_save_changes_btn_text">SAVE CHANGES</string>
     <string name="settings_back_btn_text">BACK</string>
     <string name="title_activity_settings2">SettingsActivity2</string>
+    <string name="settings_ip_input_hint">Server IP</string>
+    <string name="settings_ip_port_hint">Port</string>
+    <string name="recv_msg_text">Message from server: </string>
+    <string name="empty"/>
+    <string name="ip_status_text"><![CDATA[<IP ADDRESS>]]></string>
+    <string name="port_status_text"><![CDATA[<PORT>]]></string>
 </resources>

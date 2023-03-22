@@ -27,7 +27,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.textfield.TextInputEditText
-        android:id="@+id/send_msg_input"
+        android:id="@+id/send_msg_input_id"
         android:layout_width="339dp"
         android:layout_height="77dp"
         android:layout_marginTop="76dp"

@@ -1,27 +1,47 @@
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/ConstraintLayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <EditText
+        android:id="@+id/settings_ip_input"
+        android:hint="@string/settings_ip_input_hint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:inputType="number|numberDecimal"
+        android:digits="0123456789."
+        android:autofillHints="">
+
+    </EditText>
+
+    <EditText
+        android:id="@+id/settings_port_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/settings_ip_port_hint"
+        android:minHeight="48dp"
+        android:inputType="number"
+        android:autofillHints="">
+
+    </EditText>
 
     <Button
-        android:id="@+id/save_changes_btn"
-        android:layout_width="0dp"
-        android:layout_height="55dp"
-        android:backgroundTint="@color/save_changes_btn_color"
-        android:text="@string/settings_save_changes_text"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:id="@+id/settings_save_changes_btn"
+        android:text="@string/settings_save_changes_btn_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/save_changes_btn_color" />
+
 
     <Button
         android:id="@+id/back_btn"
-        android:layout_width="197dp"
-        android:layout_height="49dp"
-        android:backgroundTint="@color/back_btn_color"
         android:text="@string/settings_back_btn_text"
-        android:textColor="#000000"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/back_btn_color" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+
+
+</androidx.appcompat.widget.LinearLayoutCompat>
