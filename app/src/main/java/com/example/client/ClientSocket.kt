@@ -8,7 +8,7 @@ import java.net.Socket
 
 object SocketManager {
     private lateinit var context: Context
-    private lateinit var socket: Socket
+    private var socket: Socket? = null
     private lateinit var socketWriter: PrintWriter
     private lateinit var socketReader: BufferedReader
     private var callback: SocketCallback? = null
@@ -22,7 +22,7 @@ object SocketManager {
     }
 
     fun isConnected(): Boolean {
-        return socket.isConnected
+        return socket?.isConnected ?: false
     }
 
     fun getSocketWriter(): PrintWriter {
@@ -34,15 +34,15 @@ object SocketManager {
     }
 
     fun getHost(): String {
-        return socket.inetAddress.hostAddress
+        return socket?.inetAddress?.hostAddress ?: "-1.-1.-1.-1"
     }
 
     fun getPort(): Int {
-        return socket.port
+        return socket?.port ?: -99999
     }
 
     fun close() {
-        socket.close()
+        socket?.close()
     }
 
     suspend fun connect() {
@@ -58,11 +58,11 @@ object SocketManager {
             return
         }
 
-        if (!socket.isConnected) {
+        if (!socket?.isConnected!!) {
             return
         }
-        socketWriter = PrintWriter(socket.getOutputStream(), true)
-        socketReader = BufferedReader(InputStreamReader(socket.getInputStream()))
+        socketWriter = PrintWriter(socket?.getOutputStream()!!, true)
+        socketReader = BufferedReader(InputStreamReader(socket?.getInputStream()))
         //connectionStatusText.text = "Connected to $ip"
 
         // update the connection status
@@ -72,30 +72,43 @@ object SocketManager {
 
     private suspend fun runSocket() {
         println("Sem som sa dostal")
-        while (true) {
-            if (!socket.isConnected) {
-                callback?.onConnectionStatusUpdated("Disconnected by the server")
+            while (true) {
+                if (!socket!!.isConnected) {
+                    callback?.onConnectionStatusUpdated("Disconnected by the server")
+                    break
+                }
+                var serverMsg: String = ""
+                try {
+                    serverMsg = socketReader.readLine()
+                } catch (e: Exception) {
+                    println(e)
+                    break
+                }
+                callback?.onMessageReceived(serverMsg)
+                //recvMsgText.text = serverMsg
             }
-            var serverMsg: String = ""
-            try {
-                serverMsg = socketReader.readLine()
-            }
-            catch (e: Exception) {
-                println(e)
-            }
-            callback?.onMessageReceived(serverMsg)
-            //recvMsgText.text = serverMsg
-        }
         socketWriter.close()
         socketReader.close()
-        socket.close()
+        socket!!.close()
+        callback?.onConnectionStatusUpdated("Disconnected")
     }
 
     suspend fun sendMessage(message: String) {
-        if (!socket.isConnected) {
+        if (socket == null) return
+        if (!socket!!.isConnected) {
             return
         }
         socketWriter.println(message)
+    }
+
+    suspend fun disconnect() {
+        if (socket != null) {
+            socketWriter.close()
+            socketReader.close()
+            socket!!.close()
+            println("Teraz by som mal zavolat callback")
+            callback?.onConnectionStatusUpdated("Disconnected")
+        }
     }
 }
 

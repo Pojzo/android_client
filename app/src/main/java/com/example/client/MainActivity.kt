@@ -54,9 +54,16 @@ class MainActivity : AppCompatActivity(), SocketCallback {
     }
 
     override fun onConnectionStatusUpdated(data: String) {
+        println(data)
         connectionStatusText.text = data
-    }
 
+        if (data == "Connected") {
+            connectBtn.text = "Disconnect"
+        }
+        else {
+            connectBtn.text = "Connect"
+        }
+    }
 
     private fun setUpBtnListeners() {
         // button to open settings
@@ -65,21 +72,34 @@ class MainActivity : AppCompatActivity(), SocketCallback {
             startActivity(intent)
         }
         // create connection to the server
-        val scope = CoroutineScope(Dispatchers.IO)
         connectBtn.setOnClickListener {
-            scope.launch {
-                SocketManager.init(applicationContext)
-                SocketManager.setSocketCallback(this@MainActivity)
-                SocketManager.connect()
-            }
+            connectBntPressed()
+
         }
         // send a message to the client
         sendMsgButton.setOnClickListener {
+            val scope = CoroutineScope(Dispatchers.IO)
+
             val clientMsg = sendMsgInput.text.toString()
             scope.launch {
                 SocketManager.sendMessage(clientMsg)
             }
         }
+    }
+
+    private fun connectBntPressed() {
+        val scope = CoroutineScope(Dispatchers.IO)
+
+        if (connectBtn.text == "Connect") {
+            scope.launch {
+                SocketManager.init(applicationContext)
+                SocketManager.setSocketCallback(this@MainActivity)
+                SocketManager.connect()
+            }
+            return
+        }
+        // disconnect from the server
+        scope.launch { SocketManager.disconnect() }
     }
 
     private fun initSharedPreferences() {
@@ -93,17 +113,28 @@ class MainActivity : AppCompatActivity(), SocketCallback {
         }
         //
         editor.commit()
-
-        updateStatusIpPort(defaultIP, defaultPort)
+        val hostIP = sharedPreference.getString("IP", defaultIP)
+        val port = sharedPreference.getInt("PORT", defaultPort)
+        updateStatusIpPort(hostIP, port)
     }
     override fun onResume() {
         super.onResume()
-        val sharedPreference = getSharedPreferences("NetworkSettings", Context.MODE_PRIVATE)
-        val ip = sharedPreference.getString("IP", defaultIP)
-        val port = sharedPreference.getInt("PORT", defaultPort)
-        updateStatusIpPort(ip, port)
+        updateConnectionStatus()
+
     }
 
+    private fun updateConnectionStatus() {
+        if (SocketManager.isConnected()) {
+            onConnectionStatusUpdated("Connected")
+            val hostIP = SocketManager.getHost()
+            val port = SocketManager.getPort()
+            updateStatusIpPort(hostIP, port)
+
+        }
+        else {
+            onConnectionStatusUpdated("Disconnected")
+        }
+    }
     private fun updateStatusIpPort(ip: String?, port: Int) {
         val ipString: String = if (ip.isNullOrBlank()) {
             "IP: ".plus(defaultIP)
@@ -116,15 +147,6 @@ class MainActivity : AppCompatActivity(), SocketCallback {
     }
     override fun onDestroy() {
         super.onDestroy()
-        if (SocketManager.isConnected()) {
-            onConnectionStatusUpdated("Connected")
-            val hostIP = SocketManager.getHost()
-            val port = SocketManager.getPort()
-            updateStatusIpPort(hostIP, port)
-        }
-        else {
-            onConnectionStatusUpdated("Disconnected")
-        }
     }
 }
 
