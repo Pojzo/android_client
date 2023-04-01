@@ -1,7 +1,6 @@
 package com.example.client
 
 //noinspection SuspiciousImport
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -9,13 +8,16 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.textfield.TextInputEditText
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.io.PrintWriter
-import java.net.Socket
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
+interface SocketCallback {
+    fun onMessageReceived(data: String)
+    fun onConnectionStatusUpdated(data: String)
+}
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), SocketCallback {
 
     private lateinit var sendMsgButton: Button
     private lateinit var sendMsgInput: TextInputEditText
@@ -29,10 +31,6 @@ class MainActivity : AppCompatActivity() {
 
     private var defaultIP: String = "0.0.0.0"
     private var defaultPort: Int = 4444
-
-    private lateinit var socket: Socket
-    private lateinit var socketWriter: PrintWriter
-    private lateinit var socketReader: BufferedReader
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,6 +49,15 @@ class MainActivity : AppCompatActivity() {
         setUpBtnListeners()
     }
 
+    override fun onMessageReceived(data: String) {
+        recvMsgText.text = data
+    }
+
+    override fun onConnectionStatusUpdated(data: String) {
+        connectionStatusText.text = data
+    }
+
+
     private fun setUpBtnListeners() {
         // button to open settings
         settingsBtn.setOnClickListener {
@@ -58,45 +65,21 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
         // create connection to the server
+        val scope = CoroutineScope(Dispatchers.IO)
         connectBtn.setOnClickListener {
-            connect()
+            scope.launch {
+                SocketManager.init(applicationContext)
+                SocketManager.setSocketCallback(this@MainActivity)
+                SocketManager.connect()
+            }
         }
         // send a message to the client
         sendMsgButton.setOnClickListener {
-            sendButtonClicked()
-        }
-    }
-
-    private fun sendButtonClicked() {
-        if (!::socket.isInitialized) {
-            return
-        }
-        if (!socket.isConnected) {
-            return
-        }
-        val clientMsg = sendMsgInput.text
-        Thread {
-            socketWriter.println(clientMsg)
-        }.start()
-    }
-
-    @SuppressLint("SetTextI18n")
-    private fun connect() {
-        val thread = Thread {
-            val sharedPreference = getSharedPreferences("NetworkSettings", Context.MODE_PRIVATE)
-            val ip = sharedPreference.getString("IP", "0.0.0.0")
-            val port = sharedPreference.getInt("PORT", 44444)
-            socket = Socket(ip, port)
-            if (!socket.isConnected) {
-                return@Thread
+            val clientMsg = sendMsgInput.text.toString()
+            scope.launch {
+                SocketManager.sendMessage(clientMsg)
             }
-            socketWriter = PrintWriter(socket.getOutputStream(), true)
-            socketReader = BufferedReader(InputStreamReader(socket.getInputStream()))
-            connectionStatusText.text = "Connected to $ip"
-
-            runSocket()
         }
-        thread.start()
     }
 
     private fun initSharedPreferences() {
@@ -113,26 +96,11 @@ class MainActivity : AppCompatActivity() {
 
         updateStatusIpPort(defaultIP, defaultPort)
     }
-    private fun runSocket() {
-        while (true) {
-            val serverMsg = socketReader.readLine()
-            recvMsgText.text = serverMsg
-
-            if (serverMsg == "BYE") {
-                socketWriter.println("BYE")
-                break
-            }
-        }
-        socketReader.close()
-        socket.close()
-    }
-
     override fun onResume() {
         super.onResume()
         val sharedPreference = getSharedPreferences("NetworkSettings", Context.MODE_PRIVATE)
         val ip = sharedPreference.getString("IP", defaultIP)
         val port = sharedPreference.getInt("PORT", defaultPort)
-        println("A ked sa to resumlo: ".plus(ip))
         updateStatusIpPort(ip, port)
     }
 
@@ -145,6 +113,18 @@ class MainActivity : AppCompatActivity() {
         val portString = "PORT :".plus(port.toString())
         ipStatusText.text = ipString
         portStatusText.text = portString
+    }
+    override fun onDestroy() {
+        super.onDestroy()
+        if (SocketManager.isConnected()) {
+            onConnectionStatusUpdated("Connected")
+            val hostIP = SocketManager.getHost()
+            val port = SocketManager.getPort()
+            updateStatusIpPort(hostIP, port)
+        }
+        else {
+            onConnectionStatusUpdated("Disconnected")
+        }
     }
 }
 

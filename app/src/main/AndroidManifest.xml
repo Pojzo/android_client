@@ -5,8 +5,11 @@
     <uses-sdk tools:overrideLibrary="androidx.annotation" />
     <!-- Add the INTERNET permission here -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+
 
     <application
+
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -15,10 +18,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Client"
         tools:targetApi="31">
-        <activity
-            android:name=".SettingsActivity2"
-            android:exported="false"
-            android:label="@string/title_activity_settings2" />
         <activity
             android:name=".SettingsActivity"
             android:exported="false"
