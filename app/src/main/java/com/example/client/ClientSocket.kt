@@ -73,6 +73,7 @@ object SocketManager {
     private suspend fun runSocket() {
         println("Sem som sa dostal")
             while (true) {
+                println("This is running")
                 if (!socket!!.isConnected) {
                     callback?.onConnectionStatusUpdated("Disconnected by the server")
                     break
@@ -84,6 +85,7 @@ object SocketManager {
                     println(e)
                     break
                 }
+                println("$serverMsg, toto som dostal")
                 callback?.onMessageReceived(serverMsg)
                 //recvMsgText.text = serverMsg
             }
@@ -107,8 +109,8 @@ object SocketManager {
             socketReader.close()
             socket!!.close()
             println("Teraz by som mal zavolat callback")
-            callback?.onConnectionStatusUpdated("Disconnected")
         }
+        callback?.onConnectionStatusUpdated("Disconnected")
     }
 }
 

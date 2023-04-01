@@ -47,6 +47,8 @@ class MainActivity : AppCompatActivity(), SocketCallback {
 
         initSharedPreferences()
         setUpBtnListeners()
+        SocketManager.setSocketCallback(this@MainActivity)
+
     }
 
     override fun onMessageReceived(data: String) {
@@ -120,7 +122,6 @@ class MainActivity : AppCompatActivity(), SocketCallback {
     override fun onResume() {
         super.onResume()
         updateConnectionStatus()
-
     }
 
     private fun updateConnectionStatus() {
