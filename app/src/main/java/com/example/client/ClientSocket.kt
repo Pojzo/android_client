@@ -102,9 +102,6 @@ object SocketManager {
                 val messageType = jsonMessage.getString("type")
                 val messageContent = jsonMessage.getString("content")
                 val messageTimestamp = jsonMessage.getString("timestamp")
-                val dateFormat = SimpleDateFormat("dd-MM-yyyy HH:mm:ss'Z'")
-                dateFormat.timeZone = TimeZone.getTimeZone("UTC")
-                val timestamp = dateFormat.format(Date())
 
                 withContext(Dispatchers.Main) {
                     callback?.onMessageReceived(messageType, messageContent, messageTimestamp)
@@ -117,11 +114,13 @@ object SocketManager {
         callback?.onConnectionStatusUpdated("Disconnected")
     }
 
-    suspend fun sendMessage(message: String) {
+    suspend fun sendMessage(type: String, content: String) {
         if (socket == null) return
         if (!socket!!.isConnected) {
             return
         }
+        // timestamp will be calculated automatically inside the createClientMessage function
+        val message = MessageCreator.createClientMessage(type, content)
         socketWriter.println(message)
     }
 

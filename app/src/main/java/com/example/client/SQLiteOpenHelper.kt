@@ -13,11 +13,7 @@ class DBHelper(context: Context, factory: SQLiteDatabase.CursorFactory?) :
     override fun onCreate(db: SQLiteDatabase) {
         // below is a sqlite query, where column names
         // along with their data types is given
-        val query = ("CREATE TABLE " + TABLE_NAME + " ("
-                + ID_COL + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                TYPE_COL + " TEXT," +
-                CONTENT_COL + " TEXT," +
-                TIMESTAMP_COL + " TEXT" + ")")
+        val query = ("CREATE TABLE $TABLE_NAME ($ID_COL INTEGER PRIMARY KEY AUTOINCREMENT, $SENDER_COL TEXT,$TYPE_COL TEXT,$CONTENT_COL TEXT,$TIMESTAMP_COL TEXT)")
 
         // we are calling sqlite
         // method for executing our query
@@ -27,16 +23,18 @@ class DBHelper(context: Context, factory: SQLiteDatabase.CursorFactory?) :
     override fun onUpgrade(db: SQLiteDatabase, p1: Int, p2: Int) {
         // this method is to check if table already exists
         db.execSQL("DROP TABLE IF EXISTS $TABLE_NAME")
+        println("Database dropped")
         onCreate(db)
     }
 
     // add message row to the database
-    fun addMessage(type: String, content: String, timestamp: String){
+    fun addMessage(type: String, sender: String, content: String, timestamp: String){
         // values to insert into the database
         val values = ContentValues()
 
         // insert the values in the form of key-value pairs
         values.put(TYPE_COL, type)
+        values.put(SENDER_COL, sender)
         values.put(CONTENT_COL, content)
         values.put(TIMESTAMP_COL, timestamp)
 
@@ -65,12 +63,13 @@ class DBHelper(context: Context, factory: SQLiteDatabase.CursorFactory?) :
         private const val DATABASE_NAME = "CLIENT_DATABASE"
 
         // below is the variable for database version
-        private const val DATABASE_VERSION = 1
+        private const val DATABASE_VERSION = 9
 
         const val TABLE_NAME = "messages"
 
         // column names
         const val ID_COL = "id"
+        const val SENDER_COL = "sender"
         const val TYPE_COL = "type"
         const val CONTENT_COL = "content"
         const val TIMESTAMP_COL = "timestamp"

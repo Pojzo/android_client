@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Message
 import android.view.View
 import android.widget.Button
 import android.widget.ScrollView
@@ -62,6 +63,17 @@ class MainActivity : AppCompatActivity(), SocketCallback {
             SocketManager.disconnect()
         }
     }
+    override fun onResume() {
+        super.onResume()
+        updateConnectionStatus()
+    }
+    override fun onDestroy() {
+        super.onDestroy()
+        val scope = CoroutineScope(Dispatchers.IO)
+        scope.launch {
+            SocketManager.disconnect()
+        }
+    }
 
     // method is called upon receiving a message from the server
     override fun onMessageReceived(type: String, content: String, timestamp: String) {
@@ -70,7 +82,7 @@ class MainActivity : AppCompatActivity(), SocketCallback {
         val date = dateFormat.parse(timestamp)
          */
         val db = DBHelper(this, null)
-        db.addMessage(type, content, timestamp)
+        db.addMessage(type, "Server", content, timestamp)
         updateRecvText()
     }
 
@@ -100,15 +112,21 @@ class MainActivity : AppCompatActivity(), SocketCallback {
         }
         // send a message to the client
         sendMsgButton.setOnClickListener {
-            val scope = CoroutineScope(Dispatchers.IO)
-
-            val clientMsg = sendMsgInput.text.toString()
-            scope.launch {
-                SocketManager.sendMessage(clientMsg)
-            }
+            sendBtnPressed()
         }
     }
 
+    private fun sendBtnPressed() {
+        val scope = CoroutineScope(Dispatchers.IO)
+
+        val clientMsg = sendMsgInput.text.toString()
+        scope.launch {
+            SocketManager.sendMessage(type="message", content=clientMsg)
+        }
+        val db = DBHelper(this, null)
+        db.addMessage("message", "Client", clientMsg, MessageCreator.getTimestampString())
+        updateRecvText()
+    }
     private fun connectBntPressed() {
         val scope = CoroutineScope(Dispatchers.IO)
 
@@ -139,10 +157,7 @@ class MainActivity : AppCompatActivity(), SocketCallback {
         val port = sharedPreference.getInt("PORT", defaultPort)
         updateStatusIpPort(hostIP, port)
     }
-    override fun onResume() {
-        super.onResume()
-        updateConnectionStatus()
-    }
+
 
     private fun updateConnectionStatus() {
         if (SocketManager.isConnected()) {
@@ -174,22 +189,14 @@ class MainActivity : AppCompatActivity(), SocketCallback {
         cursor!!.moveToFirst()
         while (cursor.moveToNext()) {
             val type = cursor.getString(cursor.run { getColumnIndex(DBHelper.TYPE_COL) })
+            val sender = cursor.getString(cursor.run { getColumnIndex(DBHelper.SENDER_COL) })
             val content = cursor.getString(cursor.run { getColumnIndex(DBHelper.CONTENT_COL) })
-            val timestamp = cursor.getString(cursor.run { getColumnIndex(DBHelper.CONTENT_COL) })
-            recvMsgText.text = recvMsgText.text.toString() + ("$type $content $timestamp\n")
+            val timestamp = cursor.getString(cursor.run { getColumnIndex(DBHelper.TIMESTAMP_COL) })
+            recvMsgText.text = recvMsgText.text.toString() + ("$sender\t$timestamp $content \n")
         }
         recvMsgScrollView.post { recvMsgScrollView.fullScroll(View.FOCUS_DOWN) }
 
         cursor.close()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        val scope = CoroutineScope(Dispatchers.IO)
-        scope.launch {
-            SocketManager.disconnect()
-        }
-    }
 }
-
-
