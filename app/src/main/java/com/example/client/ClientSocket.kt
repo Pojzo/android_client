@@ -1,10 +1,19 @@
 package com.example.client
 
 import android.content.Context
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.PrintWriter
 import java.net.Socket
+import java.text.SimpleDateFormat
+import java.util.*
+
+enum class MessageType {
+    TXT
+}
 
 object SocketManager {
     private lateinit var context: Context
@@ -66,7 +75,10 @@ object SocketManager {
         //connectionStatusText.text = "Connected to $ip"
 
         // update the connection status
-        callback?.onConnectionStatusUpdated("Connected")
+        withContext(Dispatchers.Main) {
+            callback?.onConnectionStatusUpdated("Connected")
+        }
+
         runSocket()
     }
 
@@ -74,23 +86,33 @@ object SocketManager {
         println("Sem som sa dostal")
             while (true) {
                 println("This is running")
-                if (!socket!!.isConnected) {
+                if (!isConnected()) {
                     callback?.onConnectionStatusUpdated("Disconnected by the server")
                     break
                 }
-                var serverMsg: String = ""
+                var serverMsg: String
                 try {
                     serverMsg = socketReader.readLine()
                 } catch (e: Exception) {
+                    println("Ukoncujem to brasko")
                     println(e)
                     break
                 }
-                println("$serverMsg, toto som dostal")
-                callback?.onMessageReceived(serverMsg)
-                //recvMsgText.text = serverMsg
+                val jsonMessage = JSONObject(serverMsg)
+                val messageType = jsonMessage.getString("type")
+                val messageContent = jsonMessage.getString("content")
+                val messageTimestamp = jsonMessage.getString("timestamp")
+                val dateFormat = SimpleDateFormat("dd-MM-yyyy HH:mm:ss'Z'")
+                dateFormat.timeZone = TimeZone.getTimeZone("UTC")
+                val timestamp = dateFormat.format(Date())
+
+                withContext(Dispatchers.Main) {
+                    callback?.onMessageReceived(messageType, messageContent, messageTimestamp)
+                }
             }
         socketWriter.close()
         socketReader.close()
+
         socket!!.close()
         callback?.onConnectionStatusUpdated("Disconnected")
     }
@@ -110,7 +132,9 @@ object SocketManager {
             socket!!.close()
             println("Teraz by som mal zavolat callback")
         }
-        callback?.onConnectionStatusUpdated("Disconnected")
+        withContext(Dispatchers.Main) {
+            callback?.onConnectionStatusUpdated("Disconnected")
+        }
     }
 }
 

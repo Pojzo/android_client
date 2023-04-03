@@ -56,18 +56,24 @@
             />
     </androidx.appcompat.widget.LinearLayoutCompat>
 
+    <ScrollView
+        android:id="@+id/recv_msg_scroll_view_id"
+        android:layout_width="match_parent"
+        android:layout_height="200dp">
+
     <TextView
         android:id="@+id/recv_msg_text_id"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/recv_msg_text" />
+</ScrollView>
 
 
-    <com.google.android.material.textfield.TextInputEditText
+<com.google.android.material.textfield.TextInputEditText
         android:id="@+id/send_msg_input_id"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="10dp"
         android:hint="@string/send_msg_hint"
         android:minHeight="48dp"
         tools:ignore="VisualLintTextFieldSize" />
