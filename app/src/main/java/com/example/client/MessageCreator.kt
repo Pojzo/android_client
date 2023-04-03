@@ -1,6 +1,8 @@
 package com.example.client
 
 import org.json.JSONObject
+import java.text.SimpleDateFormat
+import java.util.*
 
 object MessageCreator {
     private fun createUniversalMessage(type: String, content: String, timestamp: String): JSONObject {
@@ -11,7 +13,10 @@ object MessageCreator {
         return message
     }
 
-    fun createClientMessage(type: String, content: String, timestamp: String): String {
+    fun createClientMessage(type: String, content: String): String {
+        val dateFormat = SimpleDateFormat("dd-MM-yyyy HH:mm:ss'Z'")
+        dateFormat.timeZone = TimeZone.getTimeZone("UTC")
+        val timestamp = dateFormat.format(Date())
         val message = createUniversalMessage(type, content, timestamp)
         message.put("sender", "Client")
         return message.toString()
