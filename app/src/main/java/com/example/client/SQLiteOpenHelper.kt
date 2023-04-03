@@ -35,37 +35,27 @@ class DBHelper(context: Context, factory: SQLiteDatabase.CursorFactory?) :
         // values to insert into the database
         val values = ContentValues()
 
-        // we are inserting our values
-        // in the form of key-value pair
+        // insert the values in the form of key-value pairs
         values.put(TYPE_COL, type)
         values.put(CONTENT_COL, content)
         values.put(TIMESTAMP_COL, timestamp)
 
-        // here we are creating a
-        // writable variable of
-        // our database as we want to
-        // insert value in our database
+
+        // writable
         val db = this.writableDatabase
 
         // all values are inserted into database
         db.insert(TABLE_NAME, null, values)
 
-        // at last we are
-        // closing our database
         db.close()
     }
 
-    // below method is to get
-    // all data from our database
+    // get all data from messages database
     fun getName(): Cursor? {
 
-        // here we are creating a readable
-        // variable of our database
-        // as we want to read value from it
         val db = this.readableDatabase
 
-        // below code returns a cursor to
-        // read data from the database
+        // read data from database and return cursor
         return db.rawQuery("SELECT * FROM $TABLE_NAME", null)
 
     }
